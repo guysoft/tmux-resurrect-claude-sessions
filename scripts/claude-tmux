@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#
+# claude-tmux — Wrapper that launches Claude Code with session tracking.
+#
+# Sets the tmux pane title to "CC | <uuid>" so that
+# tmux-resurrect-claude-sessions can identify and resume the exact session
+# after a tmux restart.
+#
+# Usage:
+#   claude-tmux [extra claude flags...]
+#
+# Environment:
+#   CLAUDE_SESSION_ID  — If set, reuse this UUID instead of generating a new one.
+#
+# Intended to be used as:
+#   set -g @ide-agent "claude-tmux"
+#
+# License: GPL-3.0
+
+set -euo pipefail
+
+# Generate or reuse session UUID
+if [ -n "${CLAUDE_SESSION_ID:-}" ]; then
+	uuid="$CLAUDE_SESSION_ID"
+else
+	# Try uuidgen (macOS/Linux), fall back to python
+	if command -v uuidgen >/dev/null 2>&1; then
+		uuid="$(uuidgen | tr '[:upper:]' '[:lower:]')"
+	else
+		uuid="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+	fi
+fi
+
+# Set tmux pane title so the resurrect hook can extract the UUID
+printf '\033]2;CC | %s\033\\' "$uuid"
+
+# Launch Claude Code with the pinned session ID
+exec claude --session-id "$uuid" "$@"
