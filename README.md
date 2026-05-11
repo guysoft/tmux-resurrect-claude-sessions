@@ -91,6 +91,28 @@ set -g @ide-agent "claude-tmux"
 
 When you press `prefix + e`, the IDE layout spawns with Claude Code in the right pane, session-tracked automatically.
 
+### GuyIDE config.yaml
+
+If you use [GuyIDE](https://github.com/guysoft/GuyIDE), set Claude Code as the agent in `~/.guyide/config.yaml`:
+
+```yaml
+# ~/.guyide/config.yaml
+schema: guyide/config/v1
+channel: stable
+components:
+  editor:
+    driver: nvim
+  multiplexer:
+    driver: tmux
+  agent:
+    driver: claude-code          # was: opencode (default)
+claude-code:
+  cli: claude                    # executable name (default)
+  extra_args: ["--model", "opus"] # optional passthrough flags
+```
+
+Then re-run `guyide install` — it will wire up `claude-tmux` and install this plugin automatically.
+
 ### Passing extra flags to Claude
 
 The `claude-tmux` wrapper passes all arguments through to `claude`:
